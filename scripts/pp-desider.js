@@ -55,6 +55,10 @@ class PP {
     this.interval = Time.setInterval(() => {
       const currentOffset = this.offset % (2 / 3);
       image.material.diffuseTextureTransform.offsetU = currentOffset;
+      if (this.time > time && !playedRes) {
+        this.playResult(res);
+        playedRes = true;
+      }
       if (this.time > time && Math.abs(currentOffset - res) <= delta) {
         image.material.diffuseTextureTransform.offsetU = res;
         this.stop();
@@ -66,10 +70,7 @@ class PP {
       if (this.time > time / (2 / 3) && delta > 0.005) {
         delta -= 0.001;
       }
-      if (this.time > time && !playedRes) {
-        this.playResult(res);
-        playedRes = true;
-      }
+
       this.time += 1 / 60;
       this.offset += delta;
     }, 1000 / 60);
