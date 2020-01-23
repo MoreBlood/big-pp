@@ -17,17 +17,22 @@ const Materials = require("Materials");
 const Time = require("Time");
 const TouchGestures = require("TouchGestures");
 const Random = require("Random");
+const Audio = require("Audio");
 export const Diagnostics = require("Diagnostics");
 
 const image = Scene.root.find("pp-image");
 const tiledMaterial = Materials.get("tiled");
+const bigSound = Audio.getPlaybackController("big-pp-sound");
+const smallSound = Audio.getPlaybackController("small-pp-sound");
 
 image.material = tiledMaterial;
 
 class PP {
-  constructor(plane, material) {
+  constructor(plane, material, bigSound, smallSound) {
     this.plane = plane;
     this.material = material;
+    this.bigSound = bigSound;
+    this.smallSound = smallSound;
     this.offset = 0;
     this.time = 0;
     this.isPlaying = false;
@@ -44,6 +49,7 @@ class PP {
     const time = PP.getRandomArbitrary(1, 2);
     const res = [0, 1 / 3].sort(() => Math.random() - 0.5)[0];
     let delta = 0.02;
+    let playedRes = false;
 
     this.isPlaying = true;
     this.interval = Time.setInterval(() => {
@@ -54,15 +60,28 @@ class PP {
         this.stop();
         return;
       }
-      if ((this.time > time / 2) & (delta > 0.01)) {
+      if (this.time > time / 2 && delta > 0.01) {
         delta -= 0.0025;
       }
-      if ((this.time > time / (2 / 3)) & (delta > 0.005)) {
+      if (this.time > time / (2 / 3) && delta > 0.005) {
         delta -= 0.001;
+      }
+      if (this.time > time && !playedRes) {
+        this.playResult(res);
+        playedRes = true;
       }
       this.time += 1 / 60;
       this.offset += delta;
     }, 1000 / 60);
+  }
+  playResult(bigOrSmall) {
+    if (bigOrSmall === 1 / 3) {
+      this.bigSound.reset();
+      this.bigSound.setPlaying(true);
+    } else if (bigOrSmall === 0) {
+      this.smallSound.reset();
+      this.smallSound.setPlaying(true);
+    }
   }
   stop() {
     Time.clearInterval(this.interval);
@@ -74,4 +93,4 @@ class PP {
   }
 }
 
-export const game = new PP(image, tiledMaterial);
+export const game = new PP(image, tiledMaterial, bigSound, smallSound);
